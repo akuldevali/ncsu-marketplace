@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  # Authentication Service
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgresql://auth_user:auth_pass@auth-db:5432/auth_db
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ALGORITHM=HS256
+      - JWT_EXPIRE_MINUTES=30
+    depends_on:
+      - auth-db
+    networks:
+      - marketplace-network
+
+  auth-db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=auth_db
+      - POSTGRES_USER=auth_user
+      - POSTGRES_PASSWORD=auth_pass
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
+    networks:
+      - marketplace-network
+
+  # Listings Service
+  listings-service:
+    build:
+      context: ./listings-service
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8000"
+    environment:
+      - DATABASE_URL=postgresql://listings_user:listings_pass@listings-db:5432/listings_db
+      - AUTH_SERVICE_URL=http://auth-service:8000
+    depends_on:
+      - listings-db
+    networks:
+      - marketplace-network
+
+  listings-db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=listings_db
+      - POSTGRES_USER=listings_user
+      - POSTGRES_PASSWORD=listings_pass
+    volumes:
+      - listings_db_data:/var/lib/postgresql/data
+    networks:
+      - marketplace-network
+
+  # Messaging Service
+  messaging-service:
+    build:
+      context: ./messaging-service
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8000"
+    environment:
+      - DATABASE_URL=postgresql://messaging_user:messaging_pass@messaging-db:5432/messaging_db
+      - AUTH_SERVICE_URL=http://auth-service:8000
+      - LISTINGS_SERVICE_URL=http://listings-service:8000
+    depends_on:
+      - messaging-db
+    networks:
+      - marketplace-network
+
+  messaging-db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=messaging_db
+      - POSTGRES_USER=messaging_user
+      - POSTGRES_PASSWORD=messaging_pass
+    volumes:
+      - messaging_db_data:/var/lib/postgresql/data
+    networks:
+      - marketplace-network
+
+volumes:
+  auth_db_data:
+  listings_db_data:
+  messaging_db_data:
+
+networks:
+  marketplace-network:
+    driver: bridge
