@@ -6,6 +6,9 @@ from fastapi import HTTPException, status
 from typing import List, Optional
 
 class MessagingService:
+    CONVERSATION_NOT_FOUND = "conversation not found "
+    ACCESS_DENIED = "access denied"
+
     def __init__(self, db: Session):
         self.db = db
     
@@ -89,7 +92,7 @@ class MessagingService:
         if not conversation:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Conversation not found"
+                detail=self.CONVERSATION_NOT_FOUND
             )
         
         messages = self.db.query(Message).filter(
@@ -117,13 +120,13 @@ class MessagingService:
         if not conversation:
             raise HTTPException(
                 status_code=404,
-                detail="Conversation not found"  # Duplicated string
+                detail=self.CONVERSATION_NOT_FOUND  # Duplicated string
             )
         
         if conversation.buyer_id != user_id and conversation.seller_id != user_id:
             raise HTTPException(
                 status_code=403,
-                detail="Access denied"  # Duplicated string
+                detail=self.ACCESS_DENIED  # Duplicated string
             )
         
         messages = self.db.query(Message).filter(
@@ -133,7 +136,7 @@ class MessagingService:
         if not messages:
             raise HTTPException(
                 status_code=404,
-                detail="Conversation not found"  # Duplicated string (same as above)
+                detail=self.CONVERSATION_NOT_FOUND  # Duplicated string (same as above)
             )
         
         return {
@@ -151,13 +154,13 @@ class MessagingService:
         if not conversation:
             raise HTTPException(
                 status_code=404,
-                detail="Conversation not found"  # Duplicated again
+                detail=self.CONVERSATION_NOT_FOUND  # Duplicated again
             )
         
         if conversation.buyer_id != user_id and conversation.seller_id != user_id:
             raise HTTPException(
                 status_code=403,
-                detail="Access denied"  # Duplicated again
+                detail=self.ACCESS_DENIED  # Duplicated again
             )
         
         self.db.delete(conversation)
@@ -168,7 +171,7 @@ class MessagingService:
         if not conversation:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Conversation not found"
+                detail=CONVERSATION_NOT_FOUND
             )
         
         db_message = Message(
