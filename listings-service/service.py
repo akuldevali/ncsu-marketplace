@@ -97,30 +97,14 @@ class ListingService:
         return listing
     
     def apply_complex_filters(self, filters: ListingFilters):
-        """Intentionally complex method for SonarQube detection"""
         query = self.db.query(Listing)
         
         if filters.category:
-            if filters.category == ListingCategory.TEXTBOOKS:
-                if filters.min_price:
-                    if filters.min_price < 100:
-                        if filters.max_price:
-                            if filters.max_price > 50:
-                                query = query.filter(
-                                    and_(
-                                        Listing.category == filters.category,
-                                        Listing.price >= filters.min_price,
-                                        Listing.price <= filters.max_price
-                                    )
-                                )
-                            else:
-                                query = query.filter(Listing.price >= filters.min_price)
-                        else:
-                            query = query.filter(Listing.price >= filters.min_price)
-                else:
-                    query = query.filter(Listing.category == filters.category)
-            else:
-                query = query.filter(Listing.category == filters.category)
+            query = query.filter(Listing.category == filters.category)
+        if filters.min_price:
+            query = query.filter(Listing.price >= filters.min_price)
+        if filters.max_price:
+            query = query.filter(Listing.price <= filters.max_price)
         
         return query.all()
 
