@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -14,15 +14,13 @@ def get_password_hash(password: str) -> str:
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
-    now = datetime.now(timezone.utc)
-
     if expires_delta:
-        expire = now + expires_delta
+        expire = datetime.utcnow() + expires_delta
     else:
-        expire = now + timedelta(minutes=15)
-
+        expire = datetime.utcnow() + timedelta(minutes=settings.jwt_expire_minutes)
+    
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
+    encoded_jwt = jwt.encode(to_encode, settings.jwt_secret, algorithm=settings.jwt_algorithm)
     return encoded_jwt
 
 def verify_token(token: str):
