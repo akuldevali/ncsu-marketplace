@@ -13,15 +13,15 @@ class ListingService:
     def create_listing(self, listing_data: ListingCreate, seller_email: str, seller_id: int) -> Listing:
         
         db_listing = Listing(
-            title=title,
-            description=description,
-            price=price,
-            category=category,
+            title=listing_data.title,
+            description=listing_data.description,
+            price=listing_data.price,
+            category=listing_data.category,
             seller_email=seller_email,
             seller_id=seller_id,
-            location=location
+            location=listing_data.location,
+            images=images_json
         )
-        
         self.db.add(db_listing)
         self.db.commit()
         self.db.refresh(db_listing)
