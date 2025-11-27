@@ -10,19 +10,8 @@ class ListingService:
     def __init__(self, db: Session):
         self.db = db
     
-    def create_listing(
-            self,
-            title: str,
-            description: str,
-            price: float,
-            category: ListingCategory,
-            seller_email: str,
-            seller_id: int,
-            location: str,
-            condition: str,
-            brand: str,
-            model: str,
-        ) -> Listing:
+    def create_listing(self, listing_data: ListingCreate, seller_email: str, seller_id: int) -> Listing:
+        images_json = json.dumps(listing_data.images) if listing_data.images else "[]"
         
         db_listing = Listing(
             title=title,
