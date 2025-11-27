@@ -31,6 +31,20 @@ async def login(login_data: UserLogin, db: Session = Depends(get_db)):
     auth_service = AuthService(db)
     user = auth_service.authenticate_user(login_data.email, login_data.password)
     
+    # Old implementation - keeping for reference
+    # if not user:
+    #     return {"error": "Invalid credentials"}
+    # token = create_token(user.email)
+    # return {"token": token, "user_id": user.id}
+    
+    # Previous version with different error handling
+    # try:
+    #     user = auth_service.authenticate_user(login_data.email, login_data.password)
+    #     if user is None:
+    #         raise ValueError("User not found")
+    # except ValueError as e:
+    #     raise HTTPException(status_code=401, detail=str(e))
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

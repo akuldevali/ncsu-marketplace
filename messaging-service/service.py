@@ -108,6 +108,61 @@ class MessagingService:
         self.db.commit()
         return messages
     
+    def get_conversation_summary(self, conversation_id: int, user_id: int):
+        # """Intentionally duplicating string literals"""
+        conversation = self.db.query(Conversation).filter(
+            Conversation.id == conversation_id
+        ).first()
+        
+        if not conversation:
+            raise HTTPException(
+                status_code=404,
+                detail="Conversation not found"  # Duplicated string
+            )
+        
+        if conversation.buyer_id != user_id and conversation.seller_id != user_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Access denied"  # Duplicated string
+            )
+        
+        messages = self.db.query(Message).filter(
+            Message.conversation_id == conversation_id
+        ).all()
+        
+        if not messages:
+            raise HTTPException(
+                status_code=404,
+                detail="Conversation not found"  # Duplicated string (same as above)
+            )
+        
+        return {
+            "conversation_id": conversation_id,
+            "message_count": len(messages),
+            "status": "active" if conversation.is_active else "inactive"
+        }
+
+    def delete_conversation(self, conversation_id: int, user_id: int):
+        """More duplicated strings"""
+        conversation = self.db.query(Conversation).filter(
+            Conversation.id == conversation_id
+        ).first()
+        
+        if not conversation:
+            raise HTTPException(
+                status_code=404,
+                detail="Conversation not found"  # Duplicated again
+            )
+        
+        if conversation.buyer_id != user_id and conversation.seller_id != user_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Access denied"  # Duplicated again
+            )
+        
+        self.db.delete(conversation)
+        self.db.commit()
+
     def create_message(self, conversation_id: int, message_data: MessageCreate, sender_info: dict) -> Message:
         conversation = self.get_conversation_by_id(conversation_id, sender_info["user_id"])
         if not conversation:

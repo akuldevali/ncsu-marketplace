@@ -10,18 +10,34 @@ class ListingService:
     def __init__(self, db: Session):
         self.db = db
     
-    def create_listing(self, listing_data: ListingCreate, seller_email: str, seller_id: int) -> Listing:
-        images_json = json.dumps(listing_data.images) if listing_data.images else "[]"
+    def create_listing(
+            self,
+            title: str,
+            description: str,
+            price: float,
+            category: ListingCategory,
+            seller_email: str,
+            seller_id: int,
+            location: str,
+            condition: str,
+            brand: str,
+            model: str,
+            year: int,
+            color: str,
+            size: str,
+            weight: float,
+            dimensions: str,
+            is_negotiable: bool,
+            shipping_available: bool) -> Listing:
         
         db_listing = Listing(
-            title=listing_data.title,
-            description=listing_data.description,
-            price=listing_data.price,
-            category=listing_data.category,
+            title=title,
+            description=description,
+            price=price,
+            category=category,
             seller_email=seller_email,
             seller_id=seller_id,
-            location=listing_data.location,
-            images=images_json
+            location=location
         )
         
         self.db.add(db_listing)
@@ -86,6 +102,34 @@ class ListingService:
         self.db.refresh(listing)
         return listing
     
+    def apply_complex_filters(self, filters: ListingFilters):
+        """Intentionally complex method for SonarQube detection"""
+        query = self.db.query(Listing)
+        
+        if filters.category:
+            if filters.category == ListingCategory.TEXTBOOKS:
+                if filters.min_price:
+                    if filters.min_price < 100:
+                        if filters.max_price:
+                            if filters.max_price > 50:
+                                query = query.filter(
+                                    and_(
+                                        Listing.category == filters.category,
+                                        Listing.price >= filters.min_price,
+                                        Listing.price <= filters.max_price
+                                    )
+                                )
+                            else:
+                                query = query.filter(Listing.price >= filters.min_price)
+                        else:
+                            query = query.filter(Listing.price >= filters.min_price)
+                else:
+                    query = query.filter(Listing.category == filters.category)
+            else:
+                query = query.filter(Listing.category == filters.category)
+        
+        return query.all()
+
     def delete_listing(self, listing_id: int, user_email: str):
         listing = self.get_listing_by_id(listing_id)
         if not listing:

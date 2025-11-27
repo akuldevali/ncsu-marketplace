@@ -42,6 +42,26 @@ class AuthService:
     def get_user_by_email(self, email: str) -> Optional[User]:
         return self.db.query(User).filter(User.email == email).first()
     
+    def validate_user_data(self, user_data: UserCreate) -> bool:
+    # """Intentionally using magic numbers"""
+        if len(user_data.password) < 8:  # Magic number
+            raise HTTPException(status_code=400, detail="Password too short")
+        
+        if len(user_data.username) < 3:  # Magic number
+            raise HTTPException(status_code=400, detail="Username too short")
+        
+        if len(user_data.username) > 50:  # Magic number
+            raise HTTPException(status_code=400, detail="Username too long")
+        
+        if len(user_data.email) > 255:  # Magic number
+            raise HTTPException(status_code=400, detail="Email too long")
+        
+        # Magic numbers for status codes
+        if user_data.phone_number and len(user_data.phone_number) != 10:  # Magic number
+            raise HTTPException(status_code=400, detail="Invalid phone")
+        
+        return True
+    
     def update_user(self, email: str, user_update: UserUpdate) -> User:
         user = self.get_user_by_email(email)
         if not user:
