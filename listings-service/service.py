@@ -22,13 +22,7 @@ class ListingService:
             condition: str,
             brand: str,
             model: str,
-            year: int,
-            color: str,
-            size: str,
-            weight: float,
-            dimensions: str,
-            is_negotiable: bool,
-            shipping_available: bool) -> Listing:
+        ) -> Listing:
         
         db_listing = Listing(
             title=title,
